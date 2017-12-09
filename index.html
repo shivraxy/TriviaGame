@@ -63,13 +63,10 @@
         color: green;
     }
 
-    #start{
+    #startButton {
         background-color: orange;
         border-style: solid;
     }
-
-
-
     </style>
 </head>
 
@@ -77,14 +74,14 @@
     <h1>Totally Trivial Trivia Game !!</h1>
     <div id="questionBlock">
         <div class="timeLeft">
-            <p class="timeLeft">  <span class="timeLeft" id=timerem> </span> </p>
+            <p class="timeLeft"> <span class="timeLeft" id=timerem> </span> </p>
         </div>
         <div id="question">
         </div>
         <div id="answerSection">
-
-        <div class="ansbuttons" id="start"> <p> Start </p> </div>
-
+            <div class="ansbuttons" id="startButton" style="position:relative;top:300px;left:200px;">
+                <p> Start </p>
+            </div>
             <!-- should have other divs in there with  -->
         </div>
     </div>
@@ -100,24 +97,32 @@
     var unAnswered = 0;
     var wronglyAnswered = 0;
     var questionCount = 0;
+    var intervalId=0;
 
     queryURL = "https://opentdb.com/api.php?amount=1&category=11&difficulty=easy&type=multiple"
 
+    
 
     function loadNewQuestion() {
+
+        $('#timerem').text("Time Remaining ");
 
         correctAnswerPosition = 0;
         correctAnswer;
         time = 30;
 
         if (isNewQuestion) {
+            // clearInterval(internew);
+            // internew = false;
             clearInterval(intervalId);
-            $('#question').html("");
-            $('#answerSection').empty();
+            clearbox();   
+            console.log("New question " + questionCount)
         }
 
         if (questionCount < 2) //total number of questions
         {
+            clearbox(); 
+
             $.ajax({
                 url: queryURL,
                 method: "GET"
@@ -142,16 +147,18 @@
                 document.getElementById('answerSection').innerHTML = document.getElementById('answerSection').innerHTML + "<div class='ansbuttons'> <p>" + answers[3] + "</p>";
 
                 questionCount++;
+                
+                clearInterval(intervalId);
                 intervalId = setInterval(incrTime, 1000);
-
-
+                console.log('first'+intervalId);
             });
 
-        } else {
+        } 
+        else 
+        {
             //Summary Page
             clearInterval(intervalId);
-            $('#question').html("");
-            $('#answerSection').empty();
+            clearbox();
             $('#question').html("<h2> Summary </h2>");
             $('#answerSection').html("<p> Correct Answers: " + correctlyAnswered + "</p>");
             $('#answerSection').append("<p> Wrongly Answers: " + wronglyAnswered + "</p>");
@@ -160,68 +167,85 @@
 
             $(document).on('click', '#resetButton', function() {
 
+                console.log('second'+intervalId);
+                clearInterval(intervalId);
+                ClearAllIntervals();
+                questionCount = 0;
                 correctAnswerPosition = 0;
                 correctAnswer;
                 time = 30;
-                isNewQuestion = false;
+                isNewQuestion = true;
                 correctlyAnswered = 0;
                 unAnswered = 0;
                 wronglyAnswered = 0;
-                questionCount = 0;
-
-                $('#question').html("");
-                $('#answerSection').empty();
-
+                clearbox();
                 loadNewQuestion();
             })
         }
     }
 
     function incrTime() {
+        
+
         time--;
-        $('#timerem').text(time);
-        if (time == 0) {
+        $('#timerem').text("Time Remaining "+time);
+        if (time <= 0) {
             clearInterval(intervalId);
-            $('#question').html("");
-            $('#answerSection').empty();
+            clearbox();
             $('#question').html("<h2> Out of Time !!! </h2>");
             $('#answerSection').html("<h2> The correct answer was :" + correctAnswer + "</h2>");
 
-            intervalId = setInterval(loadNewQuestion, 3000);
             isNewQuestion = true;
             unAnswered++;
+            clearInterval(internew);
+            setTimeout(loadNewQuestion, 3000);
         }
     }
 
     $(document).on("click", ".ansbuttons", function(event) {
 
-        if (this.innerText == correctAnswer) {
+        if (this.innerText == "Start")
+            {
+                clearbox();
+                loadNewQuestion();
+            }
+        else {
 
-            clearInterval(intervalId);
-            $('#question').html("");
-            $('#answerSection').empty();
-            $('#question').html("<h2> You are correct !!! </h2>");
-            $('#answerSection').html("<h2> The correct answer is :" + correctAnswer + "</h2>");
-            correctlyAnswered++
-            intervalId = setInterval(loadNewQuestion, 3000);
-            isNewQuestion = true;
+            if (this.innerText == correctAnswer) {
 
-        } else {
-            clearInterval(intervalId);
-            $('#question').html("");
-            $('#answerSection').empty();
-            $('#question').html("<h2> You are wrong !!! </h2>");
-            $('#answerSection').html("<h2> The correct answer was :" + correctAnswer + "</h2>");
-            wronglyAnswered++;
-            intervalId = setInterval(loadNewQuestion, 3000);
-            isNewQuestion = true;
+                clearInterval(intervalId);
+                clearbox();
+                $('#question').html("<h2> You are correct !!! </h2>");
+                $('#answerSection').html("<h2> The correct answer is :" + correctAnswer + "</h2>");
+                //insert gif
+
+                correctlyAnswered++
+                isNewQuestion = true;
+                setTimeout(loadNewQuestion, 3000); 
+
+            } else {
+                clearInterval(intervalId);
+                clearbox();
+                $('#question').html("<h2> You are wrong !!! </h2>");
+                $('#answerSection').html("<h2> The correct answer was :" + correctAnswer + "</h2>");
+                wronglyAnswered++;
+                isNewQuestion = true;
+                setTimeout(loadNewQuestion, 3000);
+            }
+
         }
 
     });
 
+    function clearbox() {
+        $('#question').empty();
+        $('#answerSection').empty();
+    }
 
-
-
+    function ClearAllIntervals() {
+    for (var i = 1; i < 99999; i++)
+        window.clearInterval(i);
+}
 
     /*loadNewQuestion();*/
     </script>
